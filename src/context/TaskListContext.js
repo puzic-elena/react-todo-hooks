@@ -1,61 +1,77 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, {createContext, useEffect, useReducer, useState} from "react";
 import { v1 as uuid } from 'uuid';
+import reducer from "../reducer/Reducer";
+import { editTask, createTask, deleteTask, cleanTasks } from '../actions/Actions.js';
 
 export const TaskListContext = createContext([]);
 
 const TaskListContextProvider = props => {
-    const initialState = JSON.parse(localStorage.getItem('tasks')) || [];
-
-    const [tasks, setTasks] = useState(initialState);
+    const localStorageState = localStorage.getItem('tasks');
+    const initialState = localStorageState ? JSON.parse(localStorage.getItem('tasks')) : [];
+    const [state, dispatch] = useReducer(reducer, initialState);
+    const [editingTask, setEditingTask] = useState(null);
 
     useEffect(() => {
-        localStorage.setItem('tasks', JSON.stringify(tasks))
-    }, [tasks]);
+        localStorage.setItem('tasks', JSON.stringify(state))
+    }, [state]);
 
-    const [editItem, setEditItem] = useState(null);
-
-    //Add task
+    /******************** Add task ********************/
 
     const addTask = title => {
-        setTasks([...tasks, {title, id: uuid()}])
+        const newTask = {
+            title,
+            id: uuid(),
+        };
+
+        dispatch(createTask(newTask))
     };
 
-    //Remove tasks
+    /******************** Remove task ********************/
 
     const removeTask = id => {
-        setTasks(tasks.filter(task => task.id !== id))
+        const remove = {
+            id,
+        };
+
+        dispatch(deleteTask(remove))
     };
 
-    //Clear tasks
+    /******************** Clear tasks ********************/
+
     const clearList = () => {
-        setTasks([]);
+        dispatch(cleanTasks());
     };
 
-    //Find task
-    const findItem = id => {
-        const item = tasks.find(task => task.id === id);
+    /******************** Edit task ********************/
 
-        setEditItem(item);
+    const editTasks = (title, id) => {
+        const payload = {
+            title,
+            id,
+        };
+
+        dispatch(editTask(payload));
+
     };
 
-    //Edittask
-    const editTask = (title, id) => {
-        const newTasks = tasks.map(task => (task.id === id ? {title, id} : task));
+    /******************** Find tasks ********************/
 
-        setTasks(newTasks);
-        setEditItem(null);
-    };
+    const findItem = id =>
+        state.find(task => task.id === id)
+    ;
+
 
     return (
         <TaskListContext.Provider
             value={{
-                tasks,
+                editingTask,
+                setEditingTask,
+                state,
+                findItem,
                 addTask,
+                editTasks,
                 removeTask,
                 clearList,
-                findItem,
-                editTask,
-                editItem
             }}
         >
             {props.children}

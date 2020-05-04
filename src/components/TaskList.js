@@ -1,15 +1,22 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { TaskListContext } from "../context/TaskListContext";
 import Task from "./Task";
 
 const TaskList = () => {
-    const { tasks } = useContext(TaskListContext);
+    const taskContainer = useRef(null);
+    const { state } = useContext(TaskListContext);
+
+    useEffect(()=>{
+        console.log( 'state',state);
+
+        console.log(taskContainer.current.parentElement.clientHeight);
+    });
 
     return (
-        <div>
-            {tasks.length ? (
+        <div ref={taskContainer} >
+            {state.length ? (
                 <ul className="list">
-                    {tasks.map(task => {
+                    {state.map(task => {
                         return <Task task={task} key={task.id} />
                     })}
                 </ul>
