@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useMemo } from "react";
 import { TaskListContext } from "../context/TaskListContext";
 import Task from "./Task";
 
@@ -12,20 +12,25 @@ const TaskList = () => {
         console.log(taskContainer.current.parentElement.clientHeight);
     });
 
-    return (
-        <div ref={taskContainer} >
-            {state.length ? (
-                <ul className="list">
-                    {state.map(task => {
-                        return <Task task={task} key={task.id} />
-                    })}
-                </ul>
-            ) : (
+    let list = useMemo(() => {
+        return state && state.length
+            ?  state.map(task => <Task task={task} key={task.id} />)
+            : (
                 <div className="no-tasks">
                     No Tasks
                 </div>
-            )}
+            )
+    }, [state]);
+
+    return (
+        <div ref={taskContainer} >
+            {(
+                <ul className="list">
+                    { list }
+                </ul>
+            ) }
         </div>
+
     );
 };
 
